@@ -5,7 +5,7 @@ from .views.dashboard_views import (
     NotificationListAPIView,
     ActivityLogListAPIView,
 )
-from school_admin.views.staff_views import OnboardStudentAPIView, OnboardTeacherAPIView
+from school_admin.views.staff_views import OnboardStudentAPIView, OnboardTeacherAPIView,OnboardParentAPIView
 from .views.settings_views import SchoolSettingsAPIView
 from .views.school_admin_views import (
     SchoolAdminStudentListView,
@@ -37,4 +37,5 @@ urlpatterns = [
     path('parents/', SchoolAdminParentListView.as_view(), name='admin-parent-list'),
     path('teacher-assignments/', SchoolAdminTeacherAssignmentListView.as_view(), name='admin-teacher-assignment-list'),
     path('parent-student-mappings/', SchoolAdminParentStudentMappingListView.as_view(), name='admin-parent-student-mapping-list'),
+    path('staff/parents/register/', OnboardParentAPIView.as_view(), name='admin-register-parent'),
 ]
