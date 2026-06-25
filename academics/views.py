@@ -332,6 +332,10 @@ class TeacherAssignmentViewSet(TenantAwareModelViewSet):
         if allowed_section_ids is not None:
             enrollments = enrollments.filter(section_id__in=allowed_section_ids)
 
+        academic_year_id = request.query_params.get('academic_year')
+        if academic_year_id:
+            enrollments = enrollments.filter(academic_year_id=academic_year_id)
+
         serializer = StudentEnrollmentSerializer(enrollments, many=True)
         return Response({"count": enrollments.count(), "results": serializer.data}, status=status.HTTP_200_OK)
 
@@ -435,8 +439,11 @@ class SavedAIContentViewSet(TenantAwareModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        if hasattr(self.request.user, 'teacherprofile'):
-            qs = qs.filter(teacher=self.request.user.teacherprofile)
+        teacher_profile = TeacherProfile.objects.filter(user=self.request.user).first()
+        if teacher_profile:
+            qs = qs.filter(teacher=teacher_profile)
+        else:
+            qs = qs.none()
 
         content_type = self.request.query_params.get('content_type', None)
         if content_type:
@@ -445,8 +452,9 @@ class SavedAIContentViewSet(TenantAwareModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'teacherprofile'):
-            serializer.save(teacher=self.request.user.teacherprofile, school=self.request.user.school)
+        teacher_profile = TeacherProfile.objects.filter(user=self.request.user).first()
+        if teacher_profile:
+            serializer.save(teacher=teacher_profile, school=self.request.user.school)
         else:
             from rest_framework import serializers
             raise serializers.ValidationError({"detail": "User is not a teacher."})
